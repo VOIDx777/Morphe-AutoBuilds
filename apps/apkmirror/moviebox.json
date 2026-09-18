@@ -1,0 +1,9 @@
+{
+  "org": "community",
+  "name": "moviebox",
+  "type": "APK",
+  "arch": "universal",
+  "dpi": "nodpi",
+  "package": "com.community.oneroom",
+  "version": ""
+}

@@ -1,0 +1,9 @@
+{
+  "org": "rafalense",
+  "name": "plus-messenger",
+  "type": "APK",
+  "arch": "arm64-v8a",
+  "dpi": "nodpi",
+  "package": "org.telegram.plus",
+  "version": "12.10.1.1"
+}

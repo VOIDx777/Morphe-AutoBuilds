@@ -1,37 +1,96 @@
 [
   {
-    "app_name": "youtube-music",
-    "source": "morphe",
-    "arches": ["arm64-v8a", "armeabi-v7a"]
+    "app_name": "picsart",
+    "source": "rushiranpise",
+    "arches": [
+      "arm64-v8a",
+      "universal"
+    ]
   },
   {
-    "app_name": "google-photos",
-    "source": "rookie",
-    "arches": ["arm64-v8a", "armeabi-v7a"]
+    "app_name": "batteryguru",
+    "source": "rushiranpise",
+    "arches": [
+      "arm64-v8a"
+    ]
   },
   {
-    "app_name": "cake",
-    "source": "custom-patches",
-    "arches": ["arm64-v8a", "armeabi-v7a"]
+    "app_name": "kinemaster",
+    "source": "rushiranpise",
+    "arches": [
+      "universal"
+    ]
   },
-    {
+  {
+    "app_name": "vn",
+    "source": "paresh",
+    "arches": [
+      "arm64-v8a"
+    ]
+  },
+  {
+    "app_name": "1111",
+    "source": "rushiranpise",
+    "arches": [
+      "arm64-v8a"
+    ]
+  },
+  {
     "app_name": "instagram",
     "source": "piko",
-    "arches": ["arm64-v8a"]
+    "arches": [
+      "arm64-v8a"
+    ]
   },
   {
-    "app_name": "phone",
-    "source": "taknok",
-    "arches": ["arm64-v8a", "armeabi-v7a"]
+    "app_name": "pinterest",
+    "source": "adobo",
+    "arches": [
+      "arm64-v8a",
+      "universal"
+    ]
   },
   {
-    "app_name": "pokecardex",
-    "source": "almewty",
-    "arches": ["arm64-v8a", "armeabi-v7a"]
+    "app_name": "plus-messenger",
+    "source": "paresh",
+    "arches": [
+      "arm64-v8a"
+    ]
   },
   {
-    "app_name": "messenger",
-    "source": "revanced",
-    "arches": ["arm64-v8a", "armeabi-v7a"]
+    "app_name": "sdmaidse",
+    "source": "paresh",
+    "arches": [
+      "universal"
+    ]
+  },
+  {
+    "app_name": "truecaller",
+    "source": "paresh",
+    "arches": [
+      "arm64-v8a"
+    ]
+  },
+  {
+    "app_name": "ufovpn",
+    "source": "bholey",
+    "arches": [
+      "arm64-v8a"
+    ]
+  },
+  {
+    "app_name": "moviebox",
+    "source": "hxreborn",
+    "arches": [
+      "universal"
+    ]
+  },
+  {
+    "app_name": "gboard",
+    "source": "jasonwu1994",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a"
+    ]
   }
 ]

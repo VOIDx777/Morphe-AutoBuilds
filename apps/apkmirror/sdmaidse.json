@@ -1,0 +1,9 @@
+{
+  "org": "darken",
+  "name": "sd-maid-2-se-system-cleaner",
+  "type": "BUNDLE",
+  "arch": "universal",
+  "dpi": "120-640dpi",
+  "package": "eu.darken.sdmse",
+  "version": "2.0.3-rc0"
+}

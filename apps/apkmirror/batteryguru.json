@@ -1,0 +1,10 @@
+{
+  "org": "paget96",
+  "name": "battery-guru-health-saver",
+  "release_prefix": "battery-guru-battery-health",
+  "type": "BUNDLE",
+  "arch": "arm64-v8a",
+  "dpi": "120-640dpi",
+  "package": "com.paget96.batteryguru",
+  "version": "2.5.0.8"
+}

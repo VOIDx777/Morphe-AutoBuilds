@@ -1,0 +1,10 @@
+{
+  "org": "kinemaster-video-editor-experts",
+  "name": "kinemasterpro-video-editor",
+  "release_prefix": "kinemasterpro-video-editor",
+  "type": "BUNDLE",
+  "arch": "universal",
+  "dpi": "120-640dpi",
+  "package": "com.nexstreaming.app.kinemasterfree",
+  "version": "8.1.13.36552"
+}

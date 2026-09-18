@@ -1,0 +1,9 @@
+{
+  "org": "picsart-studio",
+  "name": "picsart",
+  "type": "APK",
+  "arch": "universal",
+  "dpi": "nodpi",
+  "package": "com.picsart.studio",
+  "version": ""
+}
