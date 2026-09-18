@@ -47,10 +47,6 @@
         {
             "app_name": "moviebox",
             "source": "hxreborn"
-        },
-        {
-            "app_name": "gboard",
-            "source": "jasonwu1994"
         }
     ]
 }
