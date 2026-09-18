@@ -35,10 +35,38 @@ def fetch(url: str, referer: str | None = None) -> ScrapedResponse | None:
         response.raise_for_status()
         data = response.json()
         html = data.get("html") or ""
+
+        logging.info(
+            "Trawl response: http=%s statusCode=%s tier=%s "
+            "sessionCached=%s url=%s html_len=%s cookies=%s",
+            response.status_code,
+            data.get("statusCode"),
+            data.get("tier"),
+            data.get("sessionCached"),
+            data.get("url") or url,
+            len(html),
+            len(data.get("cookies") or []),
+        )
+
         if data.get("statusCode") != 200 or not html:
+            logging.warning(
+                "Trawl returned unusable response: statusCode=%s html_len=%s",
+                data.get("statusCode"),
+                len(html),
+            )
             return None
+
         blocked_markers = ("attention required", "just a moment", "verify you are human")
-        if any(marker in html.lower() for marker in blocked_markers):
+        found_markers = [
+            marker for marker in blocked_markers
+            if marker in html.lower()
+        ]
+
+        if found_markers:
+            logging.warning(
+                "Trawl HTML still contains Cloudflare markers: %s",
+                found_markers,
+            )
             return None
         cookies = {
             item.get("name"): item.get("value")
