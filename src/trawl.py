@@ -75,5 +75,10 @@ def fetch(url: str, referer: str | None = None) -> ScrapedResponse | None:
         }
         return ScrapedResponse(url, html.encode(), cookies, data.get("userAgent"))
     except Exception as exc:
-        logging.debug("Trawl request failed for %s: %s", url, exc)
+        logging.warning(
+            "Trawl request failed: type=%s error=%s url=%s",
+            type(exc).__name__,
+            exc,
+            url,
+        )
         return None
