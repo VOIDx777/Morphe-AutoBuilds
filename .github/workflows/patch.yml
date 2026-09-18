@@ -177,6 +177,23 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
+      - name: Wait for Trawl
+        run: |
+          echo "Waiting for Trawl browser pool..."
+          for i in {1..36}; do
+            if curl -fsS http://localhost:8191/health >/dev/null; then
+              echo "✅ Trawl is ready"
+              curl -fsS http://localhost:8191/health || true
+              exit 0
+            fi
+            echo "Trawl not ready yet ($i/36)"
+            sleep 5
+          done
+
+          echo "❌ Trawl failed to become ready"
+          curl -sS http://localhost:8191/health || true
+          exit 1
+
       - name: Build APK
         env:
           APP_NAME: ${{ matrix.app_name }}
