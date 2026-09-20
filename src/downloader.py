@@ -422,12 +422,17 @@ def download_apkeep(
 
         if override_version:
             candidates = [override_version]
-        elif config.get("version"):
-            candidates = [config["version"]]
         else:
+            # Prefer Morphe-compatible versions (e.g. KineMaster .GP)
+            # instead of using the raw version from the app config.
             candidates = utils.get_supported_versions(
                 package, cli, patches
             )
+
+            # Fall back to the configured version only if Morphe
+            # does not report any compatible versions.
+            if not candidates and config.get("version"):
+                candidates = [config["version"]]
 
         if not candidates:
             raise ValueError(
