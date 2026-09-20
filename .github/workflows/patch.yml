@@ -195,12 +195,12 @@ jobs:
           exit 1
 
       - name: Install Apkeep
-  run: |
-    curl -fsSL https://github.com/EFForg/apkeep/releases/download/1.0.0/apkeep-x86_64-unknown-linux-gnu -o /usr/local/bin/apkeep
-    chmod +x /usr/local/bin/apkeep
-    apkeep --version
+        run: |
+          curl -fsSL https://github.com/EFForg/apkeep/releases/download/1.0.0/apkeep-x86_64-unknown-linux-gnu -o /usr/local/bin/apkeep
+          chmod +x /usr/local/bin/apkeep
+          apkeep --version
 
-- name: Build APK
+      - name: Build APK
         env:
           APP_NAME: ${{ matrix.app_name }}
           SOURCE: ${{ matrix.source }}
