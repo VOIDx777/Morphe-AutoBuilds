@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 import time
 from pathlib import Path
 from src import (
@@ -11,6 +12,7 @@ from src import (
     apkmirror,
     github,
     apkcombo,
+    trawl,
 )
 
 def download_resource(url: str, name: str = None) -> Path:
@@ -36,6 +38,64 @@ def download_resource(url: str, name: str = None) -> Path:
     )
 
     return filepath
+
+def download_resource_trawl(
+    url: str,
+    referer: str | None = None,
+) -> Path:
+    """Download a resource through Trawl's browser-backed MITM proxy."""
+    # First establish a real Trawl browser session on the URL.
+    session_page = trawl.fetch(url, referer=referer)
+
+    cookies = session_page.cookies if session_page else None
+    browser_url = session_page.url if session_page else url
+
+    response = trawl.download(
+        url,
+        referer=referer,
+        cookies=cookies,
+    )
+
+    if response is None:
+        # Retry using the URL resolved by the browser session.
+        if browser_url != url:
+            response = trawl.download(
+                browser_url,
+                referer=referer,
+                cookies=cookies,
+            )
+
+    if response is None:
+        raise RuntimeError("Trawl download failed")
+
+    final_url = response.url
+    name = utils.extract_filename(response, fallback_url=final_url)
+
+    filepath = Path(name)
+
+    total_size = int(response.headers.get("content-length", 0))
+    downloaded_size = 0
+
+    with filepath.open("wb") as file:
+        for chunk in response.iter_content(chunk_size=1024 * 1024):
+            if chunk:
+                file.write(chunk)
+                downloaded_size += len(chunk)
+
+    if downloaded_size == 0:
+        filepath.unlink(missing_ok=True)
+        raise RuntimeError("Trawl returned an empty download")
+
+    logging.info(
+        'Trawl URL: %s [%s/%s] -> "%s"',
+        final_url,
+        downloaded_size,
+        total_size,
+        filepath,
+    )
+
+    return filepath
+
 
 def download_required(source: str) -> tuple[list[Path], str]:
     source_path = Path("sources") / f"{source}.json"
@@ -208,6 +268,41 @@ def download_platform(
                 return filepath, version, candidates
             except Exception as e:
                 last_error = e
+                logging.warning(
+                    "Normal download failed for %s v%s on %s: %s",
+                    app_name,
+                    version,
+                    platform,
+                    e,
+                )
+
+                # Last-resort browser/proxy fallback through Trawl.
+                try:
+                    trawl_proxy = os.getenv("TRAWL_PROXY")
+                    if trawl_proxy:
+                        logging.info(
+                            "Trying Trawl fallback for %s v%s on %s",
+                            app_name,
+                            version,
+                            platform,
+                        )
+
+                        filepath = download_resource_trawl(
+                            download_link,
+                            referer=getattr(platform_module, "base_url", None),
+                        )
+
+                        return filepath, version, candidates
+
+                except Exception as trawl_error:
+                    logging.warning(
+                        "Trawl fallback failed for %s v%s on %s: %s",
+                        app_name,
+                        version,
+                        platform,
+                        trawl_error,
+                    )
+
                 continue
 
         raise last_error or ValueError(f"No downloadable versions found for {app_name} on {platform}")
@@ -287,3 +382,135 @@ def download_apkeditor() -> Path:
                 raise RuntimeError(f"Failed to download APKEditor after {max_retries} attempts: {e}")
             logging.warning(f"APKEditor download attempt {attempt + 1} failed: {e}. Retrying...")
             time.sleep(2)  # Wait 2 seconds before retry
+
+def download_apkeep(
+    app_name: str,
+    cli: str,
+    patches: str,
+    arch: str = None,
+    override_version: str = None,
+) -> tuple[Path | None, str | None, list[str]]:
+    """Download an app through Apkeep's APKPure backend."""
+    import subprocess
+
+    try:
+        config = None
+
+        # Find package from any existing app config.
+        for platform in [
+            "apkmirror",
+            "uptodown",
+            "apkpure",
+            "aptoide",
+            "github",
+            "apkcombo",
+        ]:
+            config_path = Path("apps") / platform / f"{app_name}.json"
+            if config_path.exists():
+                with config_path.open() as f:
+                    candidate = json.load(f)
+                if candidate.get("package"):
+                    config = candidate
+                    break
+
+        if not config or not config.get("package"):
+            raise FileNotFoundError(
+                f"Package name not found for {app_name}"
+            )
+
+        package = config["package"]
+
+        if override_version:
+            candidates = [override_version]
+        elif config.get("version"):
+            candidates = [config["version"]]
+        else:
+            candidates = utils.get_supported_versions(
+                package, cli, patches
+            )
+
+        if not candidates:
+            raise ValueError(
+                f"No compatible versions found for {app_name}"
+            )
+
+        last_error = None
+
+        for version in candidates:
+            try:
+                logging.info(
+                    "Trying Apkeep APKPure: %s@%s",
+                    package,
+                    version,
+                )
+
+                before = set(Path(".").glob(f"{package}*"))
+
+                subprocess.run(
+                    [
+                        "apkeep",
+                        "-a",
+                        f"{package}@{version}",
+                        "-d",
+                        "apk-pure",
+                        "-r",
+                        "1",
+                        ".",
+                    ],
+                    check=True,
+                )
+
+                after = set(Path(".").glob(f"{package}*"))
+                new_files = [
+                    p for p in after - before
+                    if p.is_file() and p.stat().st_size > 0
+                ]
+
+                # Also handle an existing file produced by Apkeep.
+                if not new_files:
+                    new_files = [
+                        p for p in Path(".").glob(f"{package}*")
+                        if p.is_file() and p.stat().st_size > 0
+                    ]
+
+                if not new_files:
+                    raise RuntimeError(
+                        "Apkeep completed but produced no APK/XAPK"
+                    )
+
+                # Prefer bundle formats when available.
+                new_files.sort(
+                    key=lambda p: (
+                        p.suffix.lower() not in {
+                            ".xapk", ".apks", ".apkm"
+                        },
+                        -p.stat().st_size,
+                    )
+                )
+
+                filepath = new_files[0]
+
+                logging.info(
+                    "Apkeep downloaded: %s (%s)",
+                    filepath,
+                    filepath.stat().st_size,
+                )
+
+                return filepath, version, candidates
+
+            except Exception as e:
+                last_error = e
+                logging.warning(
+                    "Apkeep failed for %s v%s: %s",
+                    app_name,
+                    version,
+                    e,
+                )
+
+        raise last_error or RuntimeError(
+            f"Apkeep failed for {app_name}"
+        )
+
+    except Exception as e:
+        logging.error("Apkeep error for %s: %s", app_name, e)
+        return None, None, []
