@@ -21,6 +21,23 @@ on:
           - ufovpn
           - moviebox
           - gboard
+          - mega
+          - alight-motion
+          - proton-mail
+          - proton-vpn
+          - capcut
+          - mx-player-pro
+          - camscanner
+          - projectivy
+          - snaptube
+          - vpnify
+          - railone
+          - send-files-to-tv
+          - wps-office
+          - ilovepdf
+          - mindicator
+          - netguard
+          - ninjavpn
 
       arch:
         description: "Architecture"
