@@ -47,6 +47,78 @@
         {
             "app_name": "moviebox",
             "source": "hxreborn"
+        },
+        {
+            "app_name": "gboard",
+            "source": "jasonwu1994"
+        },
+        {
+            "app_name": "mega",
+            "source": "rushiranpise"
+        },
+        {
+            "app_name": "alight-motion",
+            "source": "anxyis"
+        },
+        {
+            "app_name": "proton-mail",
+            "source": "hxreborn"
+        },
+        {
+            "app_name": "proton-vpn",
+            "source": "rushiranpise"
+        },
+        {
+            "app_name": "capcut",
+            "source": "riky-dev"
+        },
+        {
+            "app_name": "mx-player-pro",
+            "source": "blazeftl"
+        },
+        {
+            "app_name": "camscanner",
+            "source": "rushiranpise"
+        },
+        {
+            "app_name": "projectivy",
+            "source": "hxreborn"
+        },
+        {
+            "app_name": "snaptube",
+            "source": "blazeftl"
+        },
+        {
+            "app_name": "vpnify",
+            "source": "bholey"
+        },
+        {
+            "app_name": "railone",
+            "source": "imxeren"
+        },
+        {
+            "app_name": "send-files-to-tv",
+            "source": "rushiranpise"
+        },
+        {
+            "app_name": "wps-office",
+            "source": "hoo-dles"
+        },
+        {
+            "app_name": "ilovepdf",
+            "source": "kiraio-moe"
+        },
+        {
+            "app_name": "mindicator",
+            "source": "rushiranpise"
+        },
+        {
+            "app_name": "netguard",
+            "source": "rushiranpise"
+        },
+        {
+            "app_name": "ninjavpn",
+            "source": "rushiranpise"
         }
     ]
 }

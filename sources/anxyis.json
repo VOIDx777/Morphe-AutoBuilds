@@ -1,0 +1,15 @@
+[
+  {
+    "name": "anxyis"
+  },
+  {
+    "user": "MorpheApp",
+    "repo": "morphe-cli",
+    "tag": "latest"
+  },
+  {
+    "user": "anxyis",
+    "repo": "anxy-patches",
+    "tag": "latest"
+  }
+]

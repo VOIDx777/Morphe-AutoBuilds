@@ -84,5 +84,132 @@
     "arches": [
       "universal"
     ]
+  },
+  {
+    "app_name": "gboard",
+    "source": "jasonwu1994",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a"
+    ]
+  },
+  {
+    "app_name": "mega",
+    "source": "rushiranpise",
+    "arches": [
+      "arm64-v8a"
+    ]
+  },
+  {
+    "app_name": "alight-motion",
+    "source": "anxyis",
+    "arches": [
+      "arm64-v8a"
+    ]
+  },
+  {
+    "app_name": "proton-mail",
+    "source": "hxreborn",
+    "arches": [
+      "arm64-v8a"
+    ]
+  },
+  {
+    "app_name": "proton-vpn",
+    "source": "rushiranpise",
+    "arches": [
+      "arm64-v8a"
+    ]
+  },
+  {
+    "app_name": "capcut",
+    "source": "riky-dev",
+    "arches": [
+      "arm64-v8a"
+    ]
+  },
+  {
+    "app_name": "mx-player-pro",
+    "source": "blazeftl",
+    "arches": [
+      "arm64-v8a"
+    ]
+  },
+  {
+    "app_name": "camscanner",
+    "source": "rushiranpise",
+    "arches": [
+      "arm64-v8a"
+    ]
+  },
+  {
+    "app_name": "projectivy",
+    "source": "hxreborn",
+    "arches": [
+      "arm64-v8a"
+    ]
+  },
+  {
+    "app_name": "snaptube",
+    "source": "blazeftl",
+    "arches": [
+      "arm64-v8a"
+    ]
+  },
+  {
+    "app_name": "vpnify",
+    "source": "bholey",
+    "arches": [
+      "arm64-v8a"
+    ]
+  },
+  {
+    "app_name": "railone",
+    "source": "imxeren",
+    "arches": [
+      "arm64-v8a"
+    ]
+  },
+  {
+    "app_name": "send-files-to-tv",
+    "source": "rushiranpise",
+    "arches": [
+      "arm64-v8a"
+    ]
+  },
+  {
+    "app_name": "wps-office",
+    "source": "hoo-dles",
+    "arches": [
+      "arm64-v8a"
+    ]
+  },
+  {
+    "app_name": "ilovepdf",
+    "source": "kiraio-moe",
+    "arches": [
+      "arm64-v8a"
+    ]
+  },
+  {
+    "app_name": "mindicator",
+    "source": "rushiranpise",
+    "arches": [
+      "arm64-v8a"
+    ]
+  },
+  {
+    "app_name": "netguard",
+    "source": "rushiranpise",
+    "arches": [
+      "arm64-v8a"
+    ]
+  },
+  {
+    "app_name": "ninjavpn",
+    "source": "rushiranpise",
+    "arches": [
+      "arm64-v8a"
+    ]
   }
 ]

@@ -1,0 +1,9 @@
+{
+    "org": "faircode",
+    "name": "netguard",
+    "type": "APK",
+    "arch": "arm64-v8a",
+    "dpi": "nodpi",
+    "package": "eu.faircode.netguard",
+    "version": ""
+}

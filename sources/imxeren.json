@@ -1,0 +1,15 @@
+[
+  {
+    "name": "imxeren"
+  },
+  {
+    "user": "MorpheApp",
+    "repo": "morphe-cli",
+    "tag": "latest"
+  },
+  {
+    "provider": "gitlab",
+    "project": "IMXEren/mix-patches",
+    "tag": "latest"
+  }
+]

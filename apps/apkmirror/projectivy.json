@@ -1,0 +1,9 @@
+{
+    "org": "spocky",
+    "name": "projectivy-launcher-android-tv",
+    "type": "BUNDLE",
+    "arch": "arm64-v8a",
+    "dpi": "320dpi",
+    "package": "com.spocky.projengmenu",
+    "version": ""
+}
