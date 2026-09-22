@@ -103,13 +103,13 @@ def run_build(app_name: str, source: str, arch: str = "universal") -> str:
     logging.info(f"✅ Using patches: {patches.name}")
 
     download_methods = [
+        downloader.download_apkeep,
         downloader.download_apkmirror,
         downloader.download_aptoide,
         downloader.download_github,
         downloader.download_uptodown,
         downloader.download_apkpure,
         downloader.download_apkcombo,
-        downloader.download_apkeep,
     ]
 
     input_apk = None

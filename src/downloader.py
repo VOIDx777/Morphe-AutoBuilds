@@ -392,6 +392,106 @@ def download_apkeep(
 ) -> tuple[Path | None, str | None, list[str]]:
     """Download an app through Apkeep's APKPure backend."""
     import subprocess
+    import tempfile
+    import zipfile
+    import re
+    import shutil
+
+    def find_apkeep_file(directory: Path, package: str) -> Path | None:
+        """Find the APK/XAPK/APKS/APKM produced by Apkeep."""
+        files = [
+            p for p in directory.glob(f"{package}*")
+            if p.is_file() and p.stat().st_size > 0
+        ]
+
+        if not files:
+            return None
+
+        # Prefer bundle formats because APKEditor can merge them later.
+        files.sort(
+            key=lambda p: (
+                p.suffix.lower() not in {
+                    ".xapk", ".apks", ".apkm"
+                },
+                -p.stat().st_size,
+            )
+        )
+
+        return files[0]
+
+    def get_actual_version(filepath: Path) -> str | None:
+        """Read the actual APK version from the downloaded APK/XAPK."""
+        base_apk = filepath
+
+        try:
+            if filepath.suffix.lower() in {".xapk", ".apks", ".apkm", ".zip"}:
+                with zipfile.ZipFile(filepath, "r") as z:
+                    apk_names = [
+                        n for n in z.namelist()
+                        if n.lower().endswith(".apk")
+                        and not Path(n).name.lower().startswith("config.")
+                    ]
+
+                    if not apk_names:
+                        raise RuntimeError(
+                            f"No base APK found inside {filepath.name}"
+                        )
+
+                    # Prefer an APK whose filename matches the package.
+                    package_name = filepath.name.split(".")[0]
+                    apk_names.sort(
+                        key=lambda n: (
+                            Path(n).name != f"{package_name}.apk",
+                            len(n),
+                        )
+                    )
+
+                    extracted = Path(
+                        tempfile.mkdtemp(prefix="apkeep-base-")
+                    ) / "base.apk"
+
+                    with z.open(apk_names[0]) as src, extracted.open("wb") as dst:
+                        dst.write(src.read())
+
+                    base_apk = extracted
+
+            apk_editor = Path("APKEditor-1.4.9.jar")
+
+            if not apk_editor.exists():
+                raise FileNotFoundError(
+                    "APKEditor-1.4.9.jar not found"
+                )
+
+            result = subprocess.run(
+                [
+                    "java",
+                    "-jar",
+                    str(apk_editor),
+                    "info",
+                    "-i",
+                    str(base_apk),
+                    "-version-name",
+                ],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+
+            match = re.search(
+                r'VersionName="([^"]+)"',
+                result.stdout,
+            )
+
+            if match:
+                return match.group(1)
+
+            raise RuntimeError(
+                f"Could not read VersionName from {base_apk}"
+            )
+
+        finally:
+            # Temporary base APKs are automatically cleaned up by the OS.
+            pass
 
     try:
         config = None
@@ -434,13 +534,11 @@ def download_apkeep(
             if not candidates and config.get("version"):
                 candidates = [config["version"]]
 
-        if not candidates:
-            raise ValueError(
-                f"No compatible versions found for {app_name}"
-            )
-
         last_error = None
 
+        # ------------------------------------------------------------
+        # 1. Try Morphe-compatible/versioned Apkeep downloads first.
+        # ------------------------------------------------------------
         for version in candidates:
             try:
                 logging.info(
@@ -449,59 +547,48 @@ def download_apkeep(
                     version,
                 )
 
-                before = set(Path(".").glob(f"{package}*"))
+                with tempfile.TemporaryDirectory(
+                    prefix=f"apkeep-{app_name}-"
+                ) as tmpdir:
+                    tmp_path = Path(tmpdir)
 
-                subprocess.run(
-                    [
-                        "apkeep",
-                        "-a",
-                        f"{package}@{version}",
-                        "-d",
-                        "apk-pure",
-                        "-r",
-                        "1",
-                        ".",
-                    ],
-                    check=True,
-                )
-
-                after = set(Path(".").glob(f"{package}*"))
-                new_files = [
-                    p for p in after - before
-                    if p.is_file() and p.stat().st_size > 0
-                ]
-
-                # Also handle an existing file produced by Apkeep.
-                if not new_files:
-                    new_files = [
-                        p for p in Path(".").glob(f"{package}*")
-                        if p.is_file() and p.stat().st_size > 0
-                    ]
-
-                if not new_files:
-                    raise RuntimeError(
-                        "Apkeep completed but produced no APK/XAPK"
+                    subprocess.run(
+                        [
+                            "apkeep",
+                            "-a",
+                            f"{package}@{version}",
+                            "-d",
+                            "apk-pure",
+                            "-r",
+                            "1",
+                            ".",
+                        ],
+                        cwd=tmp_path,
+                        check=True,
                     )
 
-                # Prefer bundle formats when available.
-                new_files.sort(
-                    key=lambda p: (
-                        p.suffix.lower() not in {
-                            ".xapk", ".apks", ".apkm"
-                        },
-                        -p.stat().st_size,
-                    )
-                )
+                    filepath = find_apkeep_file(tmp_path, package)
 
-                filepath = new_files[0]
+                    if filepath is None:
+                        raise RuntimeError(
+                            "Apkeep completed but produced no APK/XAPK"
+                        )
+
+                    # Copy the result into the repository working directory.
+                    destination = Path.cwd() / filepath.name
+
+                    if destination.exists():
+                        destination.unlink()
+
+                    shutil.copyfile(filepath, destination)
 
                 logging.info(
                     "Apkeep downloaded: %s (%s)",
-                    filepath,
-                    filepath.stat().st_size,
+                    destination,
+                    destination.stat().st_size,
                 )
 
-                return filepath, version, candidates
+                return destination, version, candidates
 
             except Exception as e:
                 last_error = e
@@ -511,6 +598,86 @@ def download_apkeep(
                     version,
                     e,
                 )
+
+        # ------------------------------------------------------------
+        # 2. Versionless fallback.
+        #
+        # Some APKPure/Apkeep packages cannot be resolved when an exact
+        # version is supplied, while the normal package query succeeds.
+        # Read the actual VersionName from the downloaded base APK so
+        # downstream Morphe receives the real version.
+        # ------------------------------------------------------------
+        try:
+            logging.info(
+                "All versioned Apkeep attempts failed for %s; "
+                "trying versionless APKPure download",
+                package,
+            )
+
+            with tempfile.TemporaryDirectory(
+                prefix=f"apkeep-latest-{app_name}-"
+            ) as tmpdir:
+                tmp_path = Path(tmpdir)
+
+                subprocess.run(
+                    [
+                        "apkeep",
+                        "-a",
+                        package,
+                        "-d",
+                        "apk-pure",
+                        "-r",
+                        "1",
+                        ".",
+                    ],
+                    cwd=tmp_path,
+                    check=True,
+                )
+
+                filepath = find_apkeep_file(tmp_path, package)
+
+                if filepath is None:
+                    raise RuntimeError(
+                        "Versionless Apkeep completed but produced no APK/XAPK"
+                    )
+
+                actual_version = get_actual_version(filepath)
+
+                if not actual_version:
+                    raise RuntimeError(
+                        "Could not determine actual downloaded APK version"
+                    )
+
+                destination = Path.cwd() / filepath.name
+
+                if destination.exists():
+                    destination.unlink()
+
+                shutil.copyfile(filepath, destination)
+
+            logging.info(
+                "Versionless Apkeep downloaded: %s (%s), actual version: %s",
+                destination,
+                destination.stat().st_size,
+                actual_version,
+            )
+
+            # Keep the original candidates so __main__.py can still
+            # try the Morphe-reported versions after the downloaded
+            # version if needed.
+            fallback_candidates = list(candidates)
+            if actual_version not in fallback_candidates:
+                fallback_candidates.insert(0, actual_version)
+
+            return destination, actual_version, fallback_candidates
+
+        except Exception as e:
+            last_error = e
+            logging.warning(
+                "Versionless Apkeep fallback failed for %s: %s",
+                app_name,
+                e,
+            )
 
         raise last_error or RuntimeError(
             f"Apkeep failed for {app_name}"
